@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import model as prediction
 
 # Crear los campos de entrada
 
@@ -12,6 +14,7 @@ day_code_dict = {"Lunes": 0, "Martes": 1, "Miércoles": 2, "Jueves": 3, "Viernes
 days_options = list(day_code_dict.keys())
 opp_options = list(opp_dict.keys())
 
+
 def v1():
     st.title("Football Prediction Model")
 
@@ -19,29 +22,38 @@ def v1():
     st.header("Match Information")
     st.subheader("Match Details")
 
-    col1, col2 = st.columns(2)
+    col1v1, col2v1 = st.columns(2)
 
-    with col1:
+    with col1v1:
         venue_code = st.radio("Venue", options=["Home", "Away"])
         opp_code = st.selectbox('Opponent', options=opp_options)
 
-    with col2:
+    with col2v1:
         hour = st.slider("Hour", 12, 20, 12)
         day_code = st.selectbox("Day", list(day_code_dict.keys()))
 
-    container = st.container()
-    container.text_align = 'center'
-    with container:
-        if st.button("Enviar"):
+
+
+    if st.button("Enviar"):
             # Recopilar los valores de cada campo
-            day_code = day_code_dict[day_code]
-            venue_code = 1 if venue_code == 'Away' else 0
-            opp_code = opp_dict[opp_code]
-            st.write("Los valores ingresados son:")
-            st.write(f"venue_code: {venue_code}")
-            st.write(f"opp_code: {opp_code}")
-            st.write(f"hour: {hour}")
-            st.write(f"day_code: {day_code}")
+        day_code = day_code_dict[day_code]
+        venue_code = 0 if venue_code == 'Away' else 1
+        opp_code = opp_dict[opp_code]
+
+        data = pd.DataFrame({
+            "venue_code": [venue_code],
+            "opp_code": [opp_code],
+            "hour": [hour],
+            "day_code": [day_code],
+        })
+
+
+        if prediction.make_predictionsv1(data)[0]:
+            st.success("¡El equipo va a ganar!")
+        else:
+            st.error("El equipo va a perder :(")
+
+
 
 def v2():
     st.title("Football Prediction Model")
@@ -50,13 +62,13 @@ def v2():
     st.header("Match Information")
     st.subheader("Match Details")
 
-    col1, col2 = st.columns(2)
+    col1v2, col2v2 = st.columns(2)
 
-    with col1:
+    with col1v2:
         venue_code = st.radio("Venue", options=["Home", "Away"])
         opp_code = st.selectbox('Opponent', options=opp_options)
 
-    with col2:
+    with col2v2:
         hour = st.slider("Hour", 12, 20, 12)
         day_code = st.selectbox("Day", list(day_code_dict.keys()))
 
@@ -79,30 +91,49 @@ def v2():
 
     # Crear un botón para enviar los valores
 
-
     if st.button("Enviar"):
         # Recopilar los valores de cada campo
         # Hacer algo con los valores, por ejemplo, imprimirlos en pantalla
         day_code = day_code_dict[day_code]
-        venue_code = 1 if venue_code == 'Away' else 0
+        venue_code = 0 if venue_code == 'Away' else 1
         opp_code = opp_dict[opp_code]
 
-        st.write("Los valores ingresados son:")
-        st.write(f"venue_code: {venue_code}")
-        st.write(f"opp_code: {opp_code}")
-        st.write(f"hour: {hour}")
-        st.write(f"day_code: {day_code}")
-        st.write(f"gf_rolling: {gf_rolling}")
-        st.write(f"ga_rolling: {ga_rolling}")
-        st.write(f"sh_rolling: {sh_rolling}")
-        st.write(f"sot_rolling: {sot_rolling}")
-        st.write(f"dist_rolling: {dist_rolling}")
-        st.write(f"fk_rolling: {fk_rolling}")
-        st.write(f"pk_rolling: {pk_rolling}")
-        st.write(f"pkatt_rolling: {pkatt_rolling}")
+        data = pd.DataFrame({
+            "venue_code": [venue_code],
+            "opp_code": [opp_code],
+            "hour": [hour],
+            "day_code": [day_code],
+            "gf_rolling": [gf_rolling],
+            "ga_rolling": [ga_rolling],
+            "sh_rolling": [sh_rolling],
+            "sot_rolling": [sot_rolling],
+            "dist_rolling": [dist_rolling],
+            "fk_rolling": [fk_rolling],
+            "pk_rolling": [pk_rolling],
+            "pkatt_rolling": [pkatt_rolling],
+        })
+
+        data = data.astype({'gf_rolling': 'float64',
+                            'ga_rolling': 'float64',
+                            'sh_rolling': 'float64',
+                            'sot_rolling': 'float64',
+                            'dist_rolling': 'float64',
+                            'fk_rolling': 'float64',
+                            'pk_rolling': 'float64',
+                            'pkatt_rolling': 'float64'})
+
+
+
+        if prediction.make_predictionsv2(data)[0] == 1:
+            st.success("¡El equipo va a ganar!")
+        else:
+            st.error("El equipo va a perder :(")
+
+
+
 
 # Crear una lista de opciones
-options = ["v1", "v2",]
+options = ["v1", "v2", ]
 
 # Crear un sidebar con la lista de opciones
 selection = st.sidebar.selectbox("Selecciona un modelo", options, index=0)
